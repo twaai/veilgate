@@ -1,0 +1,3 @@
+#!/bin/sh
+# The only interface a blind attacker agent gets. Usage: ./api <session> directory | call <route> '<json>'
+exec python3 "$(dirname "$0")/arena.py" "$@"

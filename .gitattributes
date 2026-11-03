@@ -1,0 +1,8 @@
+# Normalise line endings in the repository so Windows checkouts do not churn diffs.
+* text=auto eol=lf
+
+# Keep binary artefacts binary if any are ever added.
+*.png binary
+*.jpg binary
+*.pdf binary
+*.pptx binary

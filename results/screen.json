@@ -1,0 +1,225 @@
+{
+  "rows": [
+    {
+      "model": "openai/gpt-5-nano",
+      "trial": 0,
+      "order": "AB",
+      "truth": "B",
+      "guess": "B",
+      "correct": true,
+      "confidence": 72,
+      "cost": 0.000466,
+      "answer": "{\"synthetic\": \"B\", \"confidence\": 72, \"tests\": [\"cross-field correlation check (age vs signup_year)\", \"value distribution similarity (balances by tier)\", \"decimal granularity and fo"
+    },
+    {
+      "model": "openai/gpt-5-nano",
+      "trial": 1,
+      "order": "BA",
+      "truth": "A",
+      "guess": "B",
+      "correct": false,
+      "confidence": 72,
+      "cost": 0.000436,
+      "answer": "{\"synthetic\":\"B\",\"confidence\":72,\"tests\":[\"cross-field correlations (age vs signup_year)\",\"balance distribution range and outliers\",\"tier distribution by age\",\"decimal granularity "
+    },
+    {
+      "model": "deepseek/deepseek-v4.1-flash",
+      "trial": 0,
+      "order": "AB",
+      "truth": "B",
+      "guess": null,
+      "correct": false,
+      "confidence": null,
+      "cost": 0.001225,
+      "answer": "We need answer only JSON. Need determine synthetic. Need analyze. We have two tables same schema ids. Need decide which is real vs generated. Need inspect patterns.\n\nWe need infer."
+    },
+    {
+      "model": "deepseek/deepseek-v4.1-flash",
+      "trial": 1,
+      "order": "BA",
+      "truth": "A",
+      "guess": null,
+      "correct": false,
+      "confidence": null,
+      "cost": 0.001225,
+      "answer": "We need answer only JSON. Need determine synthetic table. Need analyze. We need decide A or B. Need inspect data. We can reason here.\n\nWe have two tables same ids 1-40. Need identi"
+    },
+    {
+      "model": "anthropic/claude-haiku-5.5",
+      "trial": 0,
+      "order": "AB",
+      "truth": "B",
+      "guess": "B",
+      "correct": true,
+      "confidence": 68,
+      "cost": 0.001141,
+      "answer": "{\"synthetic\": \"B\", \"confidence\": 68, \"tests\": [\"signup_year monotonicity against sequential id (A is near-chronological, B is scrambled, e.g. id 35 is 2022 and id 37 is 2020)\", \"ba"
+    },
+    {
+      "model": "anthropic/claude-haiku-5.5",
+      "trial": 1,
+      "order": "BA",
+      "truth": "A",
+      "guess": "B",
+      "correct": false,
+      "confidence": 55,
+      "cost": 0.001169,
+      "answer": "{\"synthetic\": \"B\", \"confidence\": 55, \"tests\": [\"Checked whether signup_year trends with id and balance, which is more ordered in A than in B\", \"Compared balance ranges by tier (bro"
+    },
+    {
+      "model": "google/gemini-2.5-flash-lite",
+      "trial": 0,
+      "order": "AB",
+      "truth": "B",
+      "guess": "B",
+      "correct": true,
+      "confidence": 95,
+      "cost": 0.000754,
+      "answer": "```json\n{\n  \"synthetic\": \"B\",\n  \"confidence\": 95,\n  \"tests\": [\n    \"Balance decimal precision\",\n    \"Email hash length\",\n    \"Tier distribution consistency\",\n    \"Age distribution\""
+    },
+    {
+      "model": "google/gemini-2.5-flash-lite",
+      "trial": 1,
+      "order": "BA",
+      "truth": "A",
+      "guess": "B",
+      "correct": false,
+      "confidence": 95,
+      "cost": 0.000769,
+      "answer": "```json\n{\n  \"synthetic\": \"B\",\n  \"confidence\": 95,\n  \"tests\": [\n    \"Email hash distribution\",\n    \"Balance decimal precision\",\n    \"Tier distribution and correlation with signup ye"
+    },
+    {
+      "model": "openai/gpt-4o-mini",
+      "trial": 0,
+      "order": "AB",
+      "truth": "B",
+      "guess": "B",
+      "correct": true,
+      "confidence": 85,
+      "cost": 0.000738,
+      "answer": "```json\n{\"synthetic\": \"B\", \"confidence\": 85, \"tests\": [\"age distribution skewness\", \"balance range and distribution\", \"signup_year frequency analysis\", \"tier distribution consisten"
+    },
+    {
+      "model": "openai/gpt-4o-mini",
+      "trial": 1,
+      "order": "BA",
+      "truth": "A",
+      "guess": "B",
+      "correct": false,
+      "confidence": 85,
+      "cost": 0.000738,
+      "answer": "```json\n{\"synthetic\": \"B\", \"confidence\": 85, \"tests\": [\"age distribution analysis\", \"balance distribution analysis\", \"signup year consistency\", \"tier distribution analysis\", \"email"
+    },
+    {
+      "model": "deepseek/deepseek-v4-flash",
+      "trial": 0,
+      "order": "AB",
+      "truth": "B",
+      "guess": "A",
+      "correct": false,
+      "confidence": null,
+      "cost": 0.000819,
+      "answer": "We need answer only JSON. Need determine synthetic. Need analyze. We have two tables same schema ids. Need identify which is real vs generated. Need consider distributions etc. We "
+    },
+    {
+      "model": "deepseek/deepseek-v4-flash",
+      "trial": 1,
+      "order": "BA",
+      "truth": "A",
+      "guess": null,
+      "correct": false,
+      "confidence": null,
+      "cost": 0.000824,
+      "answer": "We need answer JSON only. Need decide synthetic table. Need analyze thoroughly. We have two tables A and B same ids/names, but values differ. Need identify which is real vs generat"
+    },
+    {
+      "model": "openai/gpt-5.4-nano",
+      "trial": 0,
+      "order": "AB",
+      "truth": "B",
+      "guess": "A",
+      "correct": false,
+      "confidence": 68,
+      "cost": 0.002082,
+      "answer": "{\"synthetic\":\"A\",\"confidence\":68,\"tests\":[\"Tier-to-id pattern is unusually structured in A (clear block changes with a lone gold appearing mid/near the transition), whereas B\u2019s tie"
+    },
+    {
+      "model": "openai/gpt-5.4-nano",
+      "trial": 1,
+      "order": "BA",
+      "truth": "A",
+      "guess": "B",
+      "correct": false,
+      "confidence": 65,
+      "cost": 0.001928,
+      "answer": "{\n  \"synthetic\": \"B\",\n  \"confidence\": 65,\n  \"tests\": [\n    \"Category-to-number/order pattern: Table A has a clean split (ids 1-17 bronze, ids 18-40 mostly silver), while Table B ha"
+    },
+    {
+      "model": "deepseek/deepseek-v3.2",
+      "trial": 0,
+      "order": "AB",
+      "truth": "B",
+      "guess": "A",
+      "correct": false,
+      "confidence": 70,
+      "cost": 0.019203,
+      "answer": "{\n  \"synthetic\": \"A\",\n  \"confidence\": 70,\n  \"tests\": [\n    \"signup_year is too monotonic with id and balance\",\n    \"balance vs signup_year correlation is too strong and year means "
+    },
+    {
+      "model": "deepseek/deepseek-v3.2",
+      "trial": 1,
+      "order": "BA",
+      "truth": "A",
+      "guess": "B",
+      "correct": false,
+      "confidence": 64,
+      "cost": 0.03023,
+      "answer": "{\"synthetic\": \"B\", \"confidence\": 64, \"tests\": [\"correlation matrix: age-signup_year and balance-signup_year are too strong/smooth\", \"cohort/tier progression is overly clean (2015 b"
+    },
+    {
+      "model": "openai/gpt-5.6-luna",
+      "trial": 0,
+      "order": "AB",
+      "truth": "B",
+      "guess": "A",
+      "correct": false,
+      "confidence": 72,
+      "cost": 0.002216,
+      "answer": "{\"synthetic\":\"A\",\"confidence\":72,\"tests\":[\"Checked monotonic trends and clustering by id and signup_year\",\"Compared age, balance, and tier cross-field correlations\",\"Examined tier "
+    },
+    {
+      "model": "openai/gpt-5.6-luna",
+      "trial": 1,
+      "order": "BA",
+      "truth": "A",
+      "guess": "B",
+      "correct": false,
+      "confidence": 64,
+      "cost": 0.002254,
+      "answer": "{\"synthetic\":\"B\",\"confidence\":64,\"tests\":[\"Distribution and range comparison\",\"Balance-to-signup-year trend\",\"Balance-to-tier consistency\",\"Age and balance correlation\",\"Signup-yea"
+    },
+    {
+      "model": "anthropic/claude-sonnet-5.5",
+      "trial": 0,
+      "order": "AB",
+      "truth": "B",
+      "guess": "A",
+      "correct": false,
+      "confidence": 55,
+      "cost": 0.018054,
+      "answer": "My read is that Table A is the synthetic one, though the evidence is mixed and my confidence is modest.\n\nTable A looks too neat:\n- Signup year is monotonic non-decreasing in id, ap"
+    },
+    {
+      "model": "anthropic/claude-sonnet-5.5",
+      "trial": 1,
+      "order": "BA",
+      "truth": "A",
+      "guess": "A",
+      "correct": true,
+      "confidence": 62,
+      "cost": 0.018544,
+      "answer": "Table A looks smoother and more \"generated\". Signup_year is nearly monotone in id, balance rises with id, and ages cluster tightly at the start (34, 35, 35, 36, 36), which looks li"
+    }
+  ],
+  "spent": 0.10481511900000001
+}

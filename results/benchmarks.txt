@@ -1,0 +1,46 @@
+# Benchmark output, 2026-11-03, after the accounting and ordering patches
+
+## Unit tests
+Ran 28 tests in 20.402s
+OK
+
+Three new regression tests, each tied to a measured failure:
+  test_budget_is_atomic_under_concurrency           (was 1.7x over budget)
+  test_critical_action_is_refused_before_it_touches_real_data  (was: write committed on a refused call)
+  test_canary_is_checked_for_quarantined_callers
+
+Two from the earlier protocol change:
+  test_rotation_grace_is_invisible
+  test_expired_and_garbage_routes_are_indistinguishable
+
+## Concurrency, measured
+before: 24 threads, 2000-byte budget -> 3358 bytes of real data returned (1.70x)
+after : 24 threads, 2000-byte budget -> 1947 bytes of real data returned (0.97x)
+window total and bytes-out now agree.
+
+## Scripted red team
+10/10 defended
+
+## Stealth (150 trials per arm, false-alarm target 10%)
+veilgate [random order]: caught 8% vs 15% false alarms   (advantage -7%)
+veilgate [id order]:    caught 13% vs 9% false alarms   (advantage +5%)
+
+Both arms are within sampling noise of the pre-patch run (7/15 and 10/9); SE at
+n=150 is about 2.5 points, so do not read the id-order move as a regression.
+
+## Privacy (corrected null: mean over every other record)
+field        = own real   = chance   ratio
+balance           0.0%       0.0%    0.0x
+age               4.5%       3.6%    1.2x
+signup_year      59.9%       8.9%    6.7x
+tier             71.0%      35.7%    2.0x
+email             0.0%       0.0%    infx
+
+Unchanged by the masking fix, as expected: the leak is in the numeric trend, not the text.
+
+## Still open
+- Process boundary: gateway, approver and agent still share one process. Not a patch,
+  an extraction (data plane / control plane / approver / shadow builder).
+- `exact` residuals: NOT a defect. The path only fires when a numeric field is a linear
+  function of the public fields, i.e. the value is already derivable from public data.
+- timing side channel (build latency at switch time) untested.

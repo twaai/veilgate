@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Test and tooling output
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local secrets — never commit these
+.env
+.env.*
+*.key
+*.pem
+openrouter.txt
+
+# Runtime state written by the arena and the MCP shim
+arena/.arena_state/
+*.log
+
+# Internal working notes and pre-release documents, kept out of the public tree
+_internal/
+
+# OS clutter
+.DS_Store
+Thumbs.db
+desktop.ini

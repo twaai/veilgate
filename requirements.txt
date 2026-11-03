@@ -1,0 +1,7 @@
+# Core dependencies: none. The gateway, the demo and both integrations are
+# standard library only.
+#
+# These two are needed only for benchmarks/stealth.py and benchmarks/privacy.py,
+# and for the two statistical tests in tests/test_veilgate.py.
+numpy>=1.24
+scipy>=1.10
