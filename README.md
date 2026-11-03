@@ -65,7 +65,7 @@ exactly one observable surface and it does not change when the switch happens.
 Under five minutes, no API keys, no network, no services.
 
 ```bash
-git clone https://github.com/<your-username>/veilgate.git
+git clone https://github.com/twaai/veilgate.git
 cd veilgate
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
