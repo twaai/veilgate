@@ -1,30 +1,31 @@
-﻿Relational consistency of the shadow
+Relational consistency of the shadow
 40 customers, 0-6 orders each, 15 seeds
+shadow randomness pinned to bench seed 20261103
 
 dense, correlated
   orders per dataset          125
   FK valid, real              100.0%
   FK valid, shadow            100.0%
-  customers referenced        real 35 / shadow 37
-  orders-per-customer drift   2.00 orders
+  customers referenced        real 35 / shadow 38
+  orders-per-customer drift   1.97 orders
 
 dense, shuffled
   orders per dataset          125
   FK valid, real              100.0%
   FK valid, shadow            100.0%
-  customers referenced        real 35 / shadow 36
-  orders-per-customer drift   1.84 orders
+  customers referenced        real 35 / shadow 35
+  orders-per-customer drift   1.91 orders
 
 sparse keys, shuffled
   orders per dataset          125
   FK valid, real              100.0%
-  FK valid, shadow            18.1%
-  customers referenced        real 35 / shadow 92
+  FK valid, shadow            18.0%
+  customers referenced        real 35 / shadow 93
   orders-per-customer drift   1.81 orders
 
 primary key named order_id instead of id
-  rows                        145
-  key preserved verbatim      5.5%
+  rows                        1869
+  key preserved verbatim      5.7%
 
 Verdict
   Foreign keys survive only when the referenced key space is a dense
@@ -32,7 +33,7 @@ Verdict
   Values are clipped into the observed numeric range, so a dense key
   space makes every synthesised FK land on a real row by accident, not
   by design. The relationship itself is still lost: the number of
-  orders attributed to each customer changes (drift above), so joined
-  aggregates are wrong even when every FK resolves.
+  orders attributed to each customer changes by 1.9 on average,
+  so joined aggregates are wrong even when every FK resolves.
   A key not literally named 'id' is treated as sensitive and replaced
-  (6% preserved), so self-joins fail outright.
+  (5.7% preserved), so self-joins fail outright.

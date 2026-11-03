@@ -1,46 +1,37 @@
-# Benchmark output, 2026-11-03, after the accounting and ordering patches
+# Benchmark output, 2026-11-03
+
+All benchmarks pin the random stream build_shadow draws from (benchmarks/repro.py,
+seed 20261103), so these figures reproduce exactly.
 
 ## Unit tests
-Ran 28 tests in 20.402s
+Ran 28 tests
 OK
-
-Three new regression tests, each tied to a measured failure:
-  test_budget_is_atomic_under_concurrency           (was 1.7x over budget)
-  test_critical_action_is_refused_before_it_touches_real_data  (was: write committed on a refused call)
-  test_canary_is_checked_for_quarantined_callers
-
-Two from the earlier protocol change:
-  test_rotation_grace_is_invisible
-  test_expired_and_garbage_routes_are_indistinguishable
-
-## Concurrency, measured
-before: 24 threads, 2000-byte budget -> 3358 bytes of real data returned (1.70x)
-after : 24 threads, 2000-byte budget -> 1947 bytes of real data returned (0.97x)
-window total and bytes-out now agree.
+(tests/test_server.py: 6, tests/test_mcp_shim.py: 5 — 39 in total)
 
 ## Scripted red team
 10/10 defended
 
-## Stealth (150 trials per arm, false-alarm target 10%)
-veilgate [random order]: caught 8% vs 15% false alarms   (advantage -7%)
-veilgate [id order]:    caught 13% vs 9% false alarms   (advantage +5%)
+## Calibrated stealth benchmark (150 trials per arm, false-alarm target 10%)
+veilgate [random order]: caught 6% of quarantined vs 15% false alarms -> advantage -9%
+  top: shift:balance 3, corr:balance-signup_year 2, spread:signup_year 2, ks:balance 1
+veilgate [id order]: caught 15% of quarantined vs 9% false alarms -> advantage +7%
+  top: tier:purity 8, shift:signup_year 4, ks:signup_year 4, ks:balance 2
 
-Both arms are within sampling noise of the pre-patch run (7/15 and 10/9); SE at
-n=150 is about 2.5 points, so do not read the id-order move as a regression.
-
-## Privacy (corrected null: mean over every other record)
+## Privacy (null = mean over every other real record)
 field        = own real   = chance   ratio
 balance           0.0%       0.0%    0.0x
-age               4.5%       3.6%    1.2x
-signup_year      59.9%       8.9%    6.7x
-tier             71.0%      35.7%    2.0x
+age               4.1%       3.6%    1.2x
+signup_year      58.8%       9.0%    6.6x
+tier             70.3%      35.7%    2.0x
 email             0.0%       0.0%    infx
 
-Unchanged by the masking fix, as expected: the leak is in the numeric trend, not the text.
+error guessing real balance: from shadow value 279, from trend line alone 202
+(shadow is a worse guess than the trend, as intended)
 
-## Still open
-- Process boundary: gateway, approver and agent still share one process. Not a patch,
-  an extraction (data plane / control plane / approver / shadow builder).
-- `exact` residuals: NOT a defect. The path only fires when a numeric field is a linear
-  function of the public fields, i.e. the value is already derivable from public data.
-- timing side channel (build latency at switch time) untested.
+## Relational schema
+See results/relational.txt. Dense integer keys: every shadow FK resolves, but
+per-customer order counts drift by 1.9 against a mean of 3.1. Sparse keys: 18.0%
+of shadow orders resolve. A primary key not named 'id': 5.7% preserved.
+
+## Live blind trials
+Recorded separately in results/live_api_trials.json and summarised in the README.

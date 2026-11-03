@@ -146,5 +146,7 @@ def run(module_name, trials=150):
 
 
 if __name__ == "__main__":
-    for m in sys.argv[1:] or ["veilgate"]:
-        run(m)
+    from repro import deterministic
+    with deterministic(20261103):
+        for m in sys.argv[1:] or ["veilgate"]:
+            run(m)

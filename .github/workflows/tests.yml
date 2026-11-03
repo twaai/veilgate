@@ -1,4 +1,4 @@
-﻿name: tests
+name: tests
 
 on:
   push:
@@ -49,5 +49,8 @@ jobs:
           echo "$out"
           echo "$out" | grep -q "10/10 defended"
 
-      - name: Relational benchmark runs
-        run: python benchmarks/relational.py > /dev/null
+      - name: Relational benchmark is reproducible
+        run: |
+          python benchmarks/relational.py > /tmp/a.txt
+          python benchmarks/relational.py > /tmp/b.txt
+          diff /tmp/a.txt /tmp/b.txt

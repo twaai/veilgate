@@ -1,5 +1,7 @@
 # Veilgate
 
+[![tests](https://github.com/twaai/veilgate/actions/workflows/tests.yml/badge.svg)](https://github.com/twaai/veilgate/actions/workflows/tests.yml)
+
 **Deception-based containment for AI agents.**
 
 When an AI agent crosses a line — it burns through its data budget, reaches for a route it
@@ -231,9 +233,13 @@ route tokens belong — a client error, not a detection, and it is recorded as s
 sweep is a capability probe, not a detection rate.
 
 The statistical benchmark (`benchmarks/stealth.py`) measures a fixed detector, calibrated
-to ~10% false alarms on real sessions: it caught 8% of quarantined sessions against 15%
-false alarms in random read order, and 13% against 9% in id order — no advantage over
+to ~10% false alarms on real sessions: it caught 6% of quarantined sessions against 15%
+false alarms in random read order, and 15% against 9% in id order — no advantage over
 chance at 150 trials per arm.
+
+Every benchmark pins the random stream that `build_shadow` draws from
+(`benchmarks/repro.py`, seed 20261103), so the numbers in this section and in `results/`
+reproduce exactly when you run the commands yourself.
 
 ### Known limitations
 
@@ -241,10 +247,11 @@ chance at 150 trials per arm.
   foreign key, and the result is in `results/relational.txt`. On dense integer keys every
   shadow foreign key resolves — but per-customer order counts differ by 1.9 against a mean
   of 3.1, which is effectively random reassignment, so any joined aggregate is wrong. On
-  sparse account-style keys (`1000, 1007, 1014, …`) only **17%** of shadow orders point at
-  an existing customer; the rest are orphans. A primary key not literally named `id` is
-  treated as sensitive and replaced (**7%** preserved), so self-joins fail outright. The
-  synthesis has no model of the relationships between tables.
+  sparse account-style keys (`1000, 1007, 1014, …`) only **18.0%** of shadow orders point
+  at an existing customer; the rest are orphans. A primary key not literally named `id` is
+  treated as sensitive and replaced (**5.7%** preserved), so self-joins fail outright. The
+  synthesis has no model of the relationships between tables. The benchmark pins the
+  shadow's random seed, so these figures reproduce exactly.
 - **In-process access has no seam.** An agent that calls a database library directly,
   inside its own process, cannot be proxied. It has to be changed to call the gateway.
 - **False positives feed a legitimate agent fake data.** A genuinely honest agent that
@@ -253,8 +260,8 @@ chance at 150 trials per arm.
 - **The shim is not a privilege boundary.** It runs as the agent's child process. It only
   holds if the agent cannot spawn arbitrary processes of its own.
 - **Coarse attributes leak.** On the corrected privacy benchmark, a shadow record's
-  membership tier matches the real person's tier about 2× more often than chance, and
-  signup year about 6.7×. Fine-grained values (balances, emails) show no above-chance
+  membership tier matches the real person's tier about 2.0× more often than chance, and
+  signup year about 6.6×. Fine-grained values (balances, emails) show no above-chance
   match, but low-cardinality fields carry information. This is a property of preserving
   the trend that makes the fakes convincing, and it is not fixed.
 - **External verification defeats it.** An agent that can contact a customer, or check a

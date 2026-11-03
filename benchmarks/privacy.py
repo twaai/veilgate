@@ -57,4 +57,6 @@ def main(seeds=200):
 
 
 if __name__ == "__main__":
-    main()
+    from repro import deterministic
+    with deterministic(20261103):
+        main()

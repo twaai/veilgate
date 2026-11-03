@@ -20,6 +20,9 @@ A fourth check covers primary keys not literally called ``id``: the gateway's
 PUBLIC_FIELDS is a hard-coded set, so a key called ``order_id`` is treated as
 sensitive and synthesised rather than preserved.
 
+The run is pinned to a fixed random stream (see benchmarks/repro.py), so the
+numbers printed here reproduce exactly.
+
     python benchmarks/relational.py
 """
 from __future__ import annotations
@@ -29,13 +32,16 @@ import random
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import veilgate as ad
+from repro import deterministic
 
 N_CUSTOMERS = 40
 MAX_ORDERS = 6
+BENCH_SEED = 20261103
 
 
-def make_customers(seed: int, sparse: bool = False) -> tuple[dict, list]:
+def make_customers(seed: int, sparse: bool = False) -> dict:
     rnd = random.Random(seed)
     ids = [1000 + 7 * i for i in range(N_CUSTOMERS)] if sparse else list(range(1, N_CUSTOMERS + 1))
     out = {}
@@ -50,7 +56,7 @@ def make_customers(seed: int, sparse: bool = False) -> tuple[dict, list]:
             "tier": "gold" if bal > 3000 else "silver" if bal > 1800 else "bronze",
             "email": f"cust-{rnd.getrandbits(32):08x}@example.net",
         }
-    return out, ids
+    return out
 
 
 def make_orders(customers: dict, seed: int, shuffled: bool) -> dict:
@@ -96,60 +102,69 @@ def report(real_c: dict, real_o: dict, sh_c: dict, sh_o: dict) -> dict:
     }
 
 
-def pk_report(orders: dict) -> dict:
+def pk_check(orders: dict) -> tuple:
+    """Return (keys preserved, rows) when the primary key is called order_id."""
     renamed = {k: {"order_id": v["id"], **{f: x for f, x in v.items() if f != "id"}}
                for k, v in orders.items()}
     shadow = ad.build_shadow(ad.Store(renamed), {}, set()).records
     kept = sum(1 for k in renamed if shadow.get(k, {}).get("order_id") == renamed[k]["order_id"])
-    return {"rows": len(renamed), "pct": 100.0 * kept / max(1, len(renamed))}
+    return kept, len(renamed)
 
 
 def main(seeds: int = 15) -> int:
     print("Relational consistency of the shadow")
-    print(f"{N_CUSTOMERS} customers, 0-{MAX_ORDERS} orders each, {seeds} seeds\n")
+    print(f"{N_CUSTOMERS} customers, 0-{MAX_ORDERS} orders each, {seeds} seeds")
+    print(f"shadow randomness pinned to bench seed {BENCH_SEED}\n")
 
-    layouts = (("dense, correlated", False, False),
-               ("dense, shuffled", False, True),
-               ("sparse keys, shuffled", True, True))
-    results = {}
-    for label, sparse, shuffled in layouts:
-        rows = []
+    with deterministic(BENCH_SEED):
+        kept = rows = 0
         for seed in range(seeds):
-            customers, _ = make_customers(seed, sparse=sparse)
-            orders = make_orders(customers, seed, shuffled)
-            sh_c = ad.build_shadow(ad.Store(customers), {}, set()).records
-            sh_o = ad.build_shadow(ad.Store(orders), {}, set()).records
-            rows.append(report(customers, orders, sh_c, sh_o))
-        a = {k: sum(r[k] for r in rows) / len(rows) for k in rows[0]}
-        results[label] = a
-        print(f"{label}")
-        print(f"  orders per dataset          {a['orders']:.0f}")
-        print(f"  FK valid, real              {a['real_fk']:.1f}%")
-        print(f"  FK valid, shadow            {a['shadow_fk']:.1f}%")
-        print(f"  customers referenced        real {a['real_refs']:.0f} / shadow {a['shadow_refs']:.0f}")
-        print(f"  orders-per-customer drift   {a['drift']:.2f} orders")
-        print()
+            customers = make_customers(seed)
+            orders = make_orders(customers, seed, shuffled=False)
+            k, n = pk_check(orders)
+            kept += k
+            rows += n
+        pk_pct = 100.0 * kept / max(1, rows)
 
-    customers, _ = make_customers(0)
-    orders = make_orders(customers, 0, shuffled=False)
-    pk = pk_report(orders)
+        results = {}
+        for label, sparse, shuffled in (("dense, correlated", False, False),
+                                        ("dense, shuffled", False, True),
+                                        ("sparse keys, shuffled", True, True)):
+            out = []
+            for seed in range(seeds):
+                customers = make_customers(seed, sparse=sparse)
+                orders = make_orders(customers, seed, shuffled)
+                sh_c = ad.build_shadow(ad.Store(customers), {}, set()).records
+                sh_o = ad.build_shadow(ad.Store(orders), {}, set()).records
+                out.append(report(customers, orders, sh_c, sh_o))
+            results[label] = {k: sum(r[k] for r in out) / len(out) for k in out[0]}
+            a = results[label]
+            print(f"{label}")
+            print(f"  orders per dataset          {a['orders']:.0f}")
+            print(f"  FK valid, real              {a['real_fk']:.1f}%")
+            print(f"  FK valid, shadow            {a['shadow_fk']:.1f}%")
+            print(f"  customers referenced        real {a['real_refs']:.0f} / shadow {a['shadow_refs']:.0f}")
+            print(f"  orders-per-customer drift   {a['drift']:.2f} orders")
+            print()
+
     print("primary key named order_id instead of id")
-    print(f"  rows                        {pk['rows']}")
-    print(f"  key preserved verbatim      {pk['pct']:.1f}%")
+    print(f"  rows                        {rows}")
+    print(f"  key preserved verbatim      {pk_pct:.1f}%")
     print()
 
     dense = results["dense, shuffled"]["shadow_fk"]
     sparse = results["sparse keys, shuffled"]["shadow_fk"]
+    drift = results["dense, shuffled"]["drift"]
     print("Verdict")
-    print(f"  Foreign keys survive only when the referenced key space is a dense")
+    print("  Foreign keys survive only when the referenced key space is a dense")
     print(f"  integer range: {dense:.0f}% valid with ids 1..40, {sparse:.0f}% with sparse ids.")
     print("  Values are clipped into the observed numeric range, so a dense key")
     print("  space makes every synthesised FK land on a real row by accident, not")
     print("  by design. The relationship itself is still lost: the number of")
-    print("  orders attributed to each customer changes (drift above), so joined")
-    print("  aggregates are wrong even when every FK resolves.")
-    print(f"  A key not literally named 'id' is treated as sensitive and replaced")
-    print(f"  ({pk['pct']:.0f}% preserved), so self-joins fail outright.")
+    print(f"  orders attributed to each customer changes by {drift:.1f} on average,")
+    print("  so joined aggregates are wrong even when every FK resolves.")
+    print("  A key not literally named 'id' is treated as sensitive and replaced")
+    print(f"  ({pk_pct:.1f}% preserved), so self-joins fail outright.")
     return 0
 
 
