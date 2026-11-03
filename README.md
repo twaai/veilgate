@@ -166,6 +166,7 @@ network cannot route to.
 | `benchmarks/redteam.py` | 10 scripted attacks, including identity spam, framing a teammate, and a 60k-call fuzz. |
 | `benchmarks/stealth.py` | Calibrated statistical detector: how often can it spot a quarantined session? |
 | `benchmarks/privacy.py` | Does a shadow value match the real person's value more often than chance? |
+| `benchmarks/relational.py` | Two tables, one foreign key: what the shadow does to joins and referential integrity. |
 | `arena/` | A blind arena for live AI attackers, operator side and attacker side. |
 | `results/` | Raw output and notes for every benchmark and every live trial run. |
 | `original/` | The first prototype this was rebuilt from, kept for the record. |
@@ -186,7 +187,7 @@ network cannot route to.
 | Persistence | **None.** Restarting the gateway loses every shadow and seen-set |
 | Transport security | **None.** Loopback HTTP only |
 | Control plane separation | **Not done.** Registration shares the data-plane listener |
-| Schema support | **One flat, 50–60 row toy table.** Joins, aggregates and foreign keys are untested |
+| Schema support | **One flat table.** Foreign keys, joins and non-`id` primary keys are now measured and fail — see limitations |
 | Real-world deployment | **Never.** No pilot has been run on a real customer schema |
 | Packaging | Source tree and a demo. No installer, no container image |
 
@@ -236,8 +237,14 @@ chance at 150 trials per arm.
 
 ### Known limitations
 
-- **Flat schema only.** The synthesis has never been run against joins, aggregates,
-  foreign keys, nulls, timestamps or free text. This is the largest untested area.
+- **Relational schemas break it.** `benchmarks/relational.py` tests two tables with a
+  foreign key, and the result is in `results/relational.txt`. On dense integer keys every
+  shadow foreign key resolves — but per-customer order counts differ by 1.9 against a mean
+  of 3.1, which is effectively random reassignment, so any joined aggregate is wrong. On
+  sparse account-style keys (`1000, 1007, 1014, …`) only **17%** of shadow orders point at
+  an existing customer; the rest are orphans. A primary key not literally named `id` is
+  treated as sensitive and replaced (**7%** preserved), so self-joins fail outright. The
+  synthesis has no model of the relationships between tables.
 - **In-process access has no seam.** An agent that calls a database library directly,
   inside its own process, cannot be proxied. It has to be changed to call the gateway.
 - **False positives feed a legitimate agent fake data.** A genuinely honest agent that

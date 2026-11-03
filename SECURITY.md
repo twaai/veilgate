@@ -4,9 +4,13 @@
 
 Please **do not open a public issue** for anything security-relevant.
 
-Use GitHub's private reporting instead: on this repository, open the **Security** tab and
-choose **Report a vulnerability**. That creates a private advisory visible only to the
-maintainers.
+Private vulnerability reporting is enabled on this repository. Open the **Security** tab
+and choose **Report a vulnerability**. That creates an advisory visible only to the
+maintainers, with a private thread for the fix.
+
+If the button is not visible for you, open a normal issue containing only the words
+"security report — please enable a private channel" and no technical detail. A maintainer
+will open the advisory and reply there.
 
 Please include:
 

@@ -1,0 +1,53 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Demo runs
+        run: python demo.py
+
+      - name: Unit tests
+        run: python tests/test_veilgate.py
+
+      - name: HTTP boundary tests
+        run: python tests/test_server.py
+
+      - name: MCP shim tests
+        run: python tests/test_mcp_shim.py
+
+      - name: Scripted red team
+        run: |
+          out=$(python benchmarks/redteam.py)
+          echo "$out"
+          echo "$out" | grep -q "10/10 defended"
+
+      - name: Relational benchmark runs
+        run: python benchmarks/relational.py > /dev/null
